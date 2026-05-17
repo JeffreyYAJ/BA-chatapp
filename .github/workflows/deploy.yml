@@ -1,0 +1,21 @@
+name: Deploy Pipeline
+
+on:
+  push:
+    branches:
+      - main
+    # On ne déclenche le déploiement backend que si on modifie le dossier server
+    paths:
+      - "server/**"
+
+jobs:
+  deploy-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📡 Déclenchement du webhook Render
+        run: |
+          curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
+          echo "Requête de déploiement envoyée à Render !"
+
+  # Pour Vercel (Frontend), l'intégration GitHub native s'en occupe automatiquement
+  # dès que le push sur 'main' est détecté. Pas besoin de surcharger l'Action !

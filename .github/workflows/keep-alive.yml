@@ -1,0 +1,19 @@
+name: Keep Render Alive (Cron)
+
+on:
+  schedule:
+    # S'exécute toutes les 10 minutes pour éviter le sleep des 15min de Render
+    - cron: "*/10 * * * *"
+  # Permet aussi de le lancer manuellement depuis l'interface GitHub
+  workflow_dispatch:
+
+jobs:
+  ping-server:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping du backend Render
+        # Remplace l'URL par la vraie URL de ton API Render
+        run: curl -s https://TON-APP-RENDER.onrender.com > /dev/null
+
+      - name: Confirmation
+        run: echo "Ping envoyé avec succès. Le serveur est réveillé."
