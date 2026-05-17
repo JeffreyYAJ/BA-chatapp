@@ -13,7 +13,7 @@ jobs:
     steps:
       - name: Ping du backend Render
         # Remplace l'URL par la vraie URL de ton API Render
-        run: curl -s https://TON-APP-RENDER.onrender.com > /dev/null
+        run: curl -s https://ba-chatapp.onrender.com > /dev/null
 
       - name: Confirmation
         run: echo "Ping envoyé avec succès. Le serveur est réveillé."
