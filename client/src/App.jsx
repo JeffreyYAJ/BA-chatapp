@@ -3,7 +3,7 @@ import { io } from 'socket.io-client';
 import './App.css'; 
 import { encryptMessage, decryptMessage } from './cryptoUtils';
 
-const socket = io('http://localhost:3001'); 
+const socket = io('https://ba-chatapp.onrender.com'); 
 
 function App() {
   const [pseudo, setPseudo] = useState('');
@@ -23,7 +23,7 @@ function App() {
     });
 
     return () => {
-      socket.off('chat_message');
+      socket.off('chat_message');'); 
       socket.off('system_message');
     };
   }, []);
