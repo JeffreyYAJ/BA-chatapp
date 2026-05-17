@@ -1,12 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
-import CryptoJS from 'crypto-js';
 import './App.css'; 
+import { encryptMessage, decryptMessage } from './cryptoUtils';
 
 const socket = io('http://localhost:3001'); 
-
-// const SECRET_KEY = "MaCleSecrete128Bits!";
-const SECRET_KEY = "JeffreyYAJ"
 
 function App() {
   const [pseudo, setPseudo] = useState('');
@@ -16,12 +13,8 @@ function App() {
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
-    // Écoute des messages des autres
     socket.on('chat_message', (data) => {
-      // Déchiffrement AES
-      const bytes = CryptoJS.AES.decrypt(data.encryptedMessage, SECRET_KEY);
-      const decryptedMessage = bytes.toString(CryptoJS.enc.Utf8);
-      
+      const decryptedMessage = decryptMessage(data.encryptedMessage);
       setMessages(prev => [...prev, { type: 'chat', pseudo: data.pseudo, text: decryptedMessage }]);
     });
 
@@ -47,67 +40,97 @@ function App() {
     }
   };
 
+  const handleQuit = () => {
+    socket.emit('leave');
+    setIsJoined(false);
+    setMessages([]);
+    setPseudo('');
+    setInputValue('');
+  };
+
   const handleSendMessage = (e) => {
     e.preventDefault();
     if (!inputValue.trim()) return;
 
     if (inputValue === '/quit') {
-      socket.emit('leave');
-      setIsJoined(false);
-      setMessages([]);
-      setPseudo('');
-      setInputValue('');
+      handleQuit();
       return;
     }
 
-    const encryptedMessage = CryptoJS.AES.encrypt(inputValue, SECRET_KEY).toString();
-    
+    const encryptedMessage = encryptMessage(inputValue);
     socket.emit('chat_message', { pseudo, encryptedMessage });
     setInputValue(''); 
   };
 
+  // --- Écran de Connexion ---
   if (!isJoined) {
     return (
-      <div style={{ textAlign: 'center', marginTop: '100px' }}>
-        <h2>Bienvenue sur SecureChat</h2>
-        <form onSubmit={handleJoin}>
+      <div className="login-container">
+        <h2> YAJChat </h2>
+        <p style={{ marginBottom: '20px', color: '#7f8c8d' }}>Rejoignez le salon chiffré</p>
+        <form onSubmit={handleJoin} className="login-form">
           <input 
             type="text" 
+            className="login-input"
             placeholder="Choisis un pseudo..." 
             value={pseudo} 
             onChange={(e) => setPseudo(e.target.value)} 
             required 
-            style={{ padding: '10px', marginRight: '10px' }}
+            autoFocus
           />
-          <button type="submit" style={{ padding: '10px 20px' }}>Rejoindre</button>
+          <button type="submit" className="btn-primary">Rejoindre le chat</button>
         </form>
       </div>
     );
   }
 
-  // Écran de Chat
+  // --- Écran de Chat ---
   return (
-    <div style={{ maxWidth: '600px', margin: '50px auto', fontFamily: 'Arial' }}>
-      <h2>Salon de discussion sécurisé</h2>
-      <div style={{ border: '1px solid #ccc', height: '300px', overflowY: 'scroll', padding: '10px', marginBottom: '10px', backgroundColor: '#f9f9f9' }}>
-        {messages.map((msg, idx) => (
-          <div key={idx} style={{ marginBottom: '8px', color: msg.type === 'system' ? 'gray' : 'black', fontStyle: msg.type === 'system' ? 'italic' : 'normal' }}>
-            {msg.type === 'chat' ? <strong>{msg.pseudo} : </strong> : null}
-            {msg.text}
-          </div>
-        ))}
+    <div className="chat-container">
+      
+      {/* En-tête */}
+      <div className="chat-header">
+        <h3> YAJChat</h3>
+        <button onClick={handleQuit} className="btn-quit">Quitter le salon</button>
+      </div>
+
+      {/* Zone des messages */}
+      <div className="chat-messages">
+        {messages.map((msg, idx) => {
+          
+          // Messages système (connexion/déconnexion)
+          if (msg.type === 'system') {
+            return <div key={idx} className="system-message">{msg.text}</div>;
+          }
+
+          // Messages normaux (les miens vs les autres)
+          const isMe = msg.pseudo === pseudo;
+          
+          return (
+            <div key={idx} className={`message-wrapper ${isMe ? 'me' : 'other'}`}>
+              {!isMe && <span className="pseudo-label">{msg.pseudo}</span>}
+              <div className="bubble">
+                {msg.text}
+              </div>
+            </div>
+          );
+        })}
         <div ref={messagesEndRef} />
       </div>
-      <form onSubmit={handleSendMessage} style={{ display: 'flex' }}>
+
+      {/* Formulaire d'envoi */}
+      <form onSubmit={handleSendMessage} className="chat-input-form">
         <input 
           type="text" 
-          placeholder="Tape ton message ou /quit pour quitter..." 
+          className="chat-input"
+          placeholder="Écris un message ou /quit..." 
           value={inputValue} 
           onChange={(e) => setInputValue(e.target.value)} 
-          style={{ flexGrow: 1, padding: '10px' }}
+          autoFocus
         />
-        <button type="submit" style={{ padding: '10px', marginLeft: '5px' }}>Envoyer</button>
+        <button type="submit" className="btn-send">Envoyer</button>
       </form>
+
     </div>
   );
 }
