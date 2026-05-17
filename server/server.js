@@ -20,7 +20,7 @@ io.on('connection', (socket) => {
   socket.on('join', (pseudo) => {
     users[socket.id] = pseudo;
     console.log(`[SERVEUR] ${pseudo} a rejoint le salon.`);
-    io.emit('system_message', `🔔 ${pseudo} a rejoint le salon.`);
+    io.emit('system_message', `[Entry] ${pseudo} a rejoint le salon.`);
   });
 
   socket.on('chat_message', (data) => {
@@ -29,14 +29,14 @@ io.on('connection', (socket) => {
 
   socket.on('leave', () => {
     if (users[socket.id]) {
-      io.emit('system_message', `🔔 ${users[socket.id]} a quitté le salon.`);
+      io.emit('system_message', `[Exit] ${users[socket.id]} a quitté le salon.`);
       delete users[socket.id];
     }
   });
 
   socket.on('disconnect', () => {
     if (users[socket.id]) {
-      io.emit('system_message', `🔔 ${users[socket.id]} a quitté le salon (déconnexion).`);
+      io.emit('system_message', `[Exit] ${users[socket.id]} a quitté le salon (déconnexion).`);
       delete users[socket.id];
     }
   });

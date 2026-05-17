@@ -1,13 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 import CryptoJS from 'crypto-js';
-import './App.css'; // Tu pourras styliser ton app ici
+import './App.css'; 
 
-// ⚠️ En production, remplace 'http://localhost:3001' par l'URL de ton serveur Node déployé
 const socket = io('http://localhost:3001'); 
 
-// Clé secrète partagée
-const SECRET_KEY = "MaCleSecrete128Bits!";
+// const SECRET_KEY = "MaCleSecrete128Bits!";
+const SECRET_KEY = "JeffreyYAJ"
 
 function App() {
   const [pseudo, setPseudo] = useState('');
@@ -26,7 +25,6 @@ function App() {
       setMessages(prev => [...prev, { type: 'chat', pseudo: data.pseudo, text: decryptedMessage }]);
     });
 
-    // Écoute des notifications système
     socket.on('system_message', (msg) => {
       setMessages(prev => [...prev, { type: 'system', text: msg }]);
     });
@@ -37,7 +35,6 @@ function App() {
     };
   }, []);
 
-  // Scroll automatique vers le bas
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -54,7 +51,6 @@ function App() {
     e.preventDefault();
     if (!inputValue.trim()) return;
 
-    // Gestion de la commande /quit
     if (inputValue === '/quit') {
       socket.emit('leave');
       setIsJoined(false);
@@ -64,14 +60,12 @@ function App() {
       return;
     }
 
-    // Chiffrement AES AVANT l'envoi au serveur
     const encryptedMessage = CryptoJS.AES.encrypt(inputValue, SECRET_KEY).toString();
     
     socket.emit('chat_message', { pseudo, encryptedMessage });
-    setInputValue(''); // Vide le champ input
+    setInputValue(''); 
   };
 
-  // Écran de connexion
   if (!isJoined) {
     return (
       <div style={{ textAlign: 'center', marginTop: '100px' }}>
