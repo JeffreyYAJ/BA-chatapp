@@ -29,6 +29,28 @@ function App() {
   }, []);
 
   useEffect(() => {
+    // Écouteur d'erreur à rajouter pour le debug :
+    socket.on('connect_error', (err) => {
+      console.error(" Erreur de connexion Socket.IO :", err.message);
+    });
+
+    socket.on('chat_message', (data) => {
+      const decryptedMessage = decryptMessage(data.encryptedMessage);
+      setMessages(prev => [...prev, { type: 'chat', pseudo: data.pseudo, text: decryptedMessage }]);
+    });
+
+    socket.on('system_message', (msg) => {
+      setMessages(prev => [...prev, { type: 'system', text: msg }]);
+    });
+
+    return () => {
+      socket.off('connect_error'); 
+      socket.off('chat_message'); 
+      socket.off('system_message');
+    };
+  }, []);
+
+  useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 

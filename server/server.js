@@ -14,6 +14,10 @@ const io = new Server(server, {
   }
 });
 
+const socket = io('https://ba-chatapp.onrender.com', {
+  transports: ['websocket']
+});
+
 const users = {};
 
 io.on('connection', (socket) => {
