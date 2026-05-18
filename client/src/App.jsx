@@ -23,7 +23,7 @@ function App() {
     });
 
     return () => {
-      socket.off('chat_message');'); 
+      socket.off('chat_message'); 
       socket.off('system_message');
     };
   }, []);
